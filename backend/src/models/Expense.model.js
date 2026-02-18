@@ -6,6 +6,7 @@ const expenseSchema = new mongoose.Schema(
     category: { type: String, required: true, index: true },
     description: { type: String },
     date: { type: Date, required: true },
+    userId: { type: String, required: true, index: true }, // Links expense to a specific user
     idempotencyKey: { type: String, unique: true, sparse: true }
   },
   { timestamps: { createdAt: 'created_at', updatedAt: false } }
