@@ -1,47 +1,64 @@
-import { useEffect, useMemo, useState } from 'react';
-import { fetchExpenses, createExpense } from '../api/expenses.api';
+import { useState, useEffect, useCallback } from 'react';
+import { fetchExpenses, createExpense, deleteExpense as apiDeleteExpense } from '../api/expenses.api';
 
 export function useExpenses() {
   const [expenses, setExpenses] = useState([]);
   const [category, setCategory] = useState('');
-  const [sort, setSort] = useState('date_desc');
+  const [sort, setSort] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const [total, setTotal] = useState(0);
 
-  async function load() {
+  const loadExpenses = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError('');
       const data = await fetchExpenses({ category, sort });
       setExpenses(data);
-    } catch (e) {
-      setError(e.message || 'Failed to load expenses');
+      const sum = data.reduce((acc, curr) => acc + curr.amount, 0);
+      setTotal(sum);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }
-
-  async function addExpense(payload) {
-    try {
-      setLoading(true);
-      setError('');
-      await createExpense(payload);
-      await load();
-    } catch (e) {
-      setError(e.message || 'Failed to create expense');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, sort]);
 
-  const total = useMemo(() => {
-    return expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  }, [expenses]);
+  useEffect(() => {
+    loadExpenses();
+  }, [loadExpenses]);
+
+  async function addExpense(expense) {
+    setLoading(true);
+    setError(null);
+    try {
+      const newExpense = await createExpense(expense);
+      setExpenses((prev) => [newExpense, ...prev]);
+      setTotal((prev) => prev + newExpense.amount);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const removeExpense = useCallback(async (id) => {
+    try {
+      // Optimistic update: remove from UI immediately
+      const expenseToRemove = expenses.find(e => e._id === id);
+      setExpenses((prev) => prev.filter((e) => e._id !== id));
+      if (expenseToRemove) {
+        setTotal((prev) => prev - expenseToRemove.amount);
+      }
+
+      // API call
+      await apiDeleteExpense(id);
+    } catch (err) {
+      setError(err.message);
+      // Revert if failed (optional, but good practice would be to reload)
+      loadExpenses(); 
+    }
+  }, [expenses, loadExpenses]);
 
   return {
     expenses,
@@ -51,8 +68,8 @@ export function useExpenses() {
     setSort,
     loading,
     error,
-    load,
     addExpense,
+    removeExpense,
     total,
   };
 }
