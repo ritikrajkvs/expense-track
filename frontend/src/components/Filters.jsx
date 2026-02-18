@@ -1,19 +1,22 @@
 export default function Filters({ category, setCategory, sort, setSort }) {
+  const inputClass = "bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition-all duration-200";
+
   return (
-    <div className="flex flex-col md:flex-row gap-3 mb-4">
+    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
       <input
-        placeholder="Filter by category"
+        placeholder="Filter categories..."
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="border rounded-lg p-2 w-full md:w-1/2"
+        className={`${inputClass} w-full sm:w-48`}
       />
       <select
         value={sort}
         onChange={(e) => setSort(e.target.value)}
-        className="border rounded-lg p-2 w-full md:w-1/2"
+        className={`${inputClass} w-full sm:w-40 cursor-pointer`}
       >
-        <option value="date_desc">Newest first</option>
-        <option value="">No sorting</option>
+        <option value="">Sort by...</option>
+        <option value="date_desc">Newest First</option>
+        <option value="date_asc">Oldest First</option>
       </select>
     </div>
   );
