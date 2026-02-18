@@ -72,8 +72,7 @@ These were intentionally excluded to keep the solution focused on the assignment
 
 ---
 
-## ▶️ Running Locally
-
+## ▶️ https://expensedtrack123.netlify.app/
 ```bash
 # Backend
 cd backend
