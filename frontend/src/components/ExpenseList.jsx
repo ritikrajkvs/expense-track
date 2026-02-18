@@ -1,26 +1,34 @@
 export default function ExpenseList({ expenses, loading }) {
-  if (loading) return <p className="text-gray-500">Loading...</p>;
-  if (!expenses.length) return <p className="text-gray-500">No expenses yet.</p>;
+  if (loading) return <div className="text-center py-10 text-slate-400 font-medium animate-pulse">Loading data...</div>;
+  if (!expenses.length) return <div className="text-center py-10 text-slate-400 font-medium">No expenses found. Start adding!</div>;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border rounded-lg overflow-hidden">
-        <thead className="bg-gray-100">
+    <div className="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
+      <table className="min-w-full divide-y divide-slate-100">
+        <thead className="bg-slate-50">
           <tr>
-            <th className="p-3 text-left">Date</th>
-            <th className="p-3 text-left">Category</th>
-            <th className="p-3 text-left">Description</th>
-            <th className="p-3 text-right">Amount (₹)</th>
+            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Category</th>
+            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Description</th>
+            <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="bg-white divide-y divide-slate-50">
           {expenses.map((e) => (
-            <tr key={e._id} className="border-t hover:bg-gray-50">
-              <td className="p-3">{new Date(e.date).toLocaleDateString()}</td>
-              <td className="p-3 capitalize">{e.category}</td>
-              <td className="p-3">{e.description}</td>
-              <td className="p-3 text-right font-medium">
-                {(e.amount / 100).toFixed(2)}
+            <tr key={e._id} className="hover:bg-purple-50/30 transition-colors duration-150">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-700">
+                {new Date(e.date).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 capitalize">
+                  {e.category}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                {e.description || '-'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-slate-800">
+                ₹ {(e.amount / 100).toFixed(2)}
               </td>
             </tr>
           ))}
