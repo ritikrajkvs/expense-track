@@ -4,7 +4,6 @@ import { getIdempotencyKey } from '../utils/idempotency.js';
 export const createExpense = async (req, res, next) => {
   try {
     const key = getIdempotencyKey(req);
-    // Get the User ID from the request headers
     const userId = req.headers['x-user-id'];
 
     if (!userId) {
@@ -18,7 +17,7 @@ export const createExpense = async (req, res, next) => {
 
     const expense = await Expense.create({
       ...req.body,
-      userId, // Save the user ID
+      userId,
       idempotencyKey: key,
     });
 
@@ -31,24 +30,41 @@ export const createExpense = async (req, res, next) => {
 export const getExpenses = async (req, res, next) => {
   try {
     const { category, sort } = req.query;
-    const userId = req.headers['x-user-id']; // Identify the user
+    const userId = req.headers['x-user-id'];
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is missing' });
     }
 
-    // Filter by userId so users only see THEIR data
     const filter = { userId };
-    
-    if (category) {
-      filter.category = category;
-    }
+    if (category) filter.category = category;
 
     const sortBy = sort === 'date_desc' ? { date: -1 } : {};
 
     const expenses = await Expense.find(filter).sort(sortBy);
 
     res.json(expenses);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteExpense = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers['x-user-id'];
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is missing' });
+    }
+
+    const result = await Expense.findOneAndDelete({ _id: id, userId });
+
+    if (!result) {
+      return res.status(404).json({ error: 'Expense not found or unauthorized' });
+    }
+
+    res.json({ message: 'Expense deleted successfully' });
   } catch (err) {
     next(err);
   }
